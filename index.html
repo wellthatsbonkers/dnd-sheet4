@@ -1,0 +1,963 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>D&D 5e Character Sheet — index3 (Core + Appearance/Backstory + Companion)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root{
+      --page-w: 980px;
+      --font: 13px/1.35 system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      --muted: #6b7280; --border: #cbd5e1; --accent: #1f2937;
+      --bg: #000; --card: #ffffff; --chip: #f1f5f9;
+      --sb-track: #e5e7eb; --sb-thumb: #9ca3af; --sb-thumb-hover: #6b7280;
+    }
+    *{ box-sizing: border-box; }
+    html,body{ margin:0; background:var(--bg); color:#0f172a; font:var(--font); }
+    .wrap{ max-width: calc(var(--page-w) + 32px); margin:24px auto; padding:16px; }
+    .toolbar{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-bottom:16px; }
+    .toolbar button, .toolbar select{ border:1px solid var(--border); background:#fff; padding:8px 12px; border-radius:10px; cursor:pointer; }
+
+    .page{ background:var(--card); border:1px solid var(--border); border-radius:16px; padding:16px;
+           box-shadow:0 12px 32px rgba(0,0,0,.35); display:none; }
+    .page.active{ display:block; }
+
+    .section{ margin-bottom:16px; border:1px solid var(--border); border-radius:16px; background:#fff; overflow:hidden; }
+    .section>.head{ background:var(--chip); padding:8px 12px; font-weight:700; color:var(--accent);
+                    border-bottom:1px solid var(--border); text-transform:uppercase; letter-spacing:.04em; font-size:12px; }
+
+    .grid{ display:grid; gap:12px; padding:12px; }
+    .g-2{ grid-template-columns:1fr 1fr; }
+    .g-3{ grid-template-columns:repeat(3,1fr); }
+    .g-4{ grid-template-columns:repeat(4,1fr); }
+    .g-5{ grid-template-columns:repeat(5,1fr); }
+    .g-6{ grid-template-columns:repeat(6,1fr); }
+    @media (max-width:980px){ .g-2,.g-3,.g-4,.g-5,.g-6{ grid-template-columns:1fr; } }
+
+    .field{ display:flex; flex-direction:column; gap:6px; border:1px solid var(--border); border-radius:12px; padding:8px; background:#fff; min-height:52px; }
+    .field label{ font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:.05em; display:flex; align-items:center; gap:6px; font-weight:600; }
+    .field input{ width:100%; border:0; outline:0; background:transparent; color:#0f172a; font:inherit; }
+    .mono{ font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace; }
+    .coin{ width:70px; }
+
+    /* list boxes */
+    .listbox{ display:flex; flex-direction:column; gap:8px; border:1px solid var(--border); border-radius:12px; padding:8px; background:#fff; }
+    .list-head{ display:flex; align-items:center; justify-content:space-between; gap:8px; }
+    .list-title{ font-size:12px; text-transform:uppercase; letter-spacing:.05em; color:var(--accent); font-weight:700; }
+    .list-controls{ display:flex; gap:8px; }
+    .list-controls button{ border:1px solid var(--border); background:#fff; padding:4px 8px; border-radius:8px; cursor:pointer; font-size:12px; }
+    .list-body{ height:200px; overflow:auto; border:1px solid var(--border); border-radius:8px; }
+    .list-body table{ width:100%; border-collapse:collapse; }
+    .list-body th,.list-body td{ border-bottom:1px solid var(--border); padding:6px 8px; text-align:left; }
+    .list-body th{ background:var(--chip); font-size:12px; text-transform:uppercase; letter-spacing:.04em; }
+    .list-body td[contenteditable="true"]{ outline:none; min-height:22px; }
+
+    /* scrollbar styling */
+    .list-body{ scrollbar-width:thin; scrollbar-color:var(--sb-thumb) var(--sb-track); }
+    .list-body::-webkit-scrollbar{ width:10px; }
+    .list-body::-webkit-scrollbar-track{ background:var(--sb-track); border-radius:10px; }
+    .list-body::-webkit-scrollbar-thumb{ background:var(--sb-thumb); border-radius:10px; border:2px solid var(--sb-track); }
+    .list-body::-webkit-scrollbar-thumb:hover{ background:var(--sb-thumb-hover); }
+
+    /* helper heights */
+    .h150 .list-body{ height:150px; } .h180 .list-body{ height:180px; }
+    .h200 .list-body{ height:200px; } .h220 .list-body{ height:220px; }
+    .h240 .list-body{ height:240px; } .h260 .list-body{ height:260px; }
+
+    /* pips */
+    .pips{ display:flex; gap:6px; flex-wrap:wrap; align-items:center; }
+    .pip{ width:16px; height:16px; border-radius:999px; border:1px solid var(--border); background:#fff;
+          display:inline-flex; align-items:center; justify-content:center; cursor:pointer; user-select:none; }
+    .pip.active{ background:#0ea5e9; border-color:#0284c7; color:#fff; }
+
+    /* ===== Ability Cards ===== */
+    .abilityCard{
+      border:1px solid var(--border); border-radius:12px; background:#fff; overflow:hidden;
+    }
+    .abilityHeader{
+      display:flex; align-items:flex-end; justify-content:space-between; gap:10px;
+      padding:8px 10px; background:var(--chip); border-bottom:1px solid var(--border);
+    }
+    .abilityTitle{
+      font-weight:800; color:var(--accent); text-transform:uppercase; letter-spacing:.05em; font-size:12px;
+    }
+    .abilityInputs{ display:flex; gap:10px; align-items:flex-end; }
+    .miniField{ display:flex; flex-direction:column; gap:4px; }
+    .miniField label{ font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:.05em; font-weight:700; }
+    .miniField input{
+      border:1px solid var(--border); border-radius:8px; padding:6px 8px; background:#fff; min-width:84px;
+    }
+    /* Score / Mod dual */
+    .miniField.dual { min-width: 180px; }
+    .dualRow{ display:grid; grid-template-columns:1fr 1px 1fr; align-items:center; gap:6px; }
+    .dualRow .divider{ width:1px; height:20px; background:var(--border); }
+
+    .skillsBody{ padding:8px 10px; display:flex; flex-direction:column; gap:6px; }
+    .skillRow{
+      display:grid; grid-template-columns: auto 40px 70px; align-items:center; gap:8px;
+      border:1px solid var(--border); border-radius:8px; padding:6px 8px;
+    }
+    .skillRow .label{ font-weight:600; }
+    .skillRow .muted{ color:var(--muted); font-size:12px; text-align:center; }
+
+    @media print{
+      .toolbar{ display:none !important; }
+      .page{ display:block !important; break-after:page; box-shadow:none; border-color:#bbb; }
+      .section{ border-color:#bbb; }
+      .list-body{ height:auto !important; overflow:visible !important; border-color:#ddd; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="toolbar">
+      <button onclick="localStorage.clear();location.reload()">Clear All</button>
+      <button onclick="window.print()">Print</button>
+      <label>Page:
+        <select id="pageSelect" onchange="showPage(this.value)">
+          <option value="1">1 — Core</option>
+          <option value="2">2 — Spells</option>
+          <option value="3">3 — Features & Notes</option>
+          <option value="4">4 — Appearance & Backstory</option>
+          <option value="5">5 — Companion / Familiar / Pet</option>
+        </select>
+      </label>
+    </div>
+
+    <!-- =========================== PAGE 1: CORE =========================== -->
+    <div class="page active" id="p1">
+      <!-- Identity -->
+      <div class="section">
+        <div class="head">Identity</div>
+        <div class="grid g-3">
+          <div class="field"><label for="p1.name">Character Name</label><input id="p1.name" /></div>
+          <div class="field"><label for="p1.classlevel">Class & Level</label><input id="p1.classlevel" /></div>
+          <div class="field"><label for="p1.player">Player Name</label><input id="p1.player" /></div>
+        </div>
+        <div class="grid g-3" style="margin-top:12px;">
+          <div class="field"><label for="p1.background">Background</label><input id="p1.background" /></div>
+          <div class="field"><label for="p1.alignment">Alignment</label><input id="p1.alignment" /></div>
+          <div class="field"><label for="p1.racexp">Race / Experience Points</label><input id="p1.racexp" placeholder="Race • XP total" /></div>
+        </div>
+      </div>
+
+      <!-- Abilities (cards with Score/Mod and per-ability skills) -->
+      <div class="section">
+        <div class="head">Abilities</div>
+        <div class="grid g-3">
+
+          <!-- STR -->
+          <div class="abilityCard" id="STR.card">
+            <div class="abilityHeader">
+              <div class="abilityTitle">Strength</div>
+              <div class="abilityInputs">
+                <div class="miniField dual">
+                  <label>Score / Mod</label>
+                  <div class="dualRow">
+                    <input id="p1.STR.score" class="mono" inputmode="numeric" />
+                    <span class="divider"></span>
+                    <input id="p1.STR.mod" class="mono" inputmode="numeric" />
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="skillsBody">
+              <div class="skillRow">
+                <label><input type="checkbox" id="p1.STR.save.prof" /> <span class="label">Saving Throw</span></label>
+                <span class="muted">STR</span>
+                <input id="p1.STR.save.val" class="mono" inputmode="numeric" />
+              </div>
+              <div class="skillRow">
+                <label><input type="checkbox" id="p1.STR.athletics.prof" /> <span class="label">Athletics</span></label>
+                <span class="muted">STR</span>
+                <input id="p1.STR.athletics.val" class="mono" inputmode="numeric" />
+              </div>
+            </div>
+          </div>
+
+          <!-- DEX -->
+          <div class="abilityCard" id="DEX.card">
+            <div class="abilityHeader">
+              <div class="abilityTitle">Dexterity</div>
+              <div class="abilityInputs">
+                <div class="miniField dual">
+                  <label>Score / Mod</label>
+                  <div class="dualRow">
+                    <input id="p1.DEX.score" class="mono" inputmode="numeric" />
+                    <span class="divider"></span>
+                    <input id="p1.DEX.mod" class="mono" inputmode="numeric" />
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="skillsBody">
+              <div class="skillRow">
+                <label><input type="checkbox" id="p1.DEX.save.prof" /> <span class="label">Saving Throw</span></label>
+                <span class="muted">DEX</span>
+                <input id="p1.DEX.save.val" class="mono" inputmode="numeric" />
+              </div>
+              <div class="skillRow">
+                <label><input type="checkbox" id="p1.DEX.acrobatics.prof" /> <span class="label">Acrobatics</span></label>
+                <span class="muted">DEX</span>
+                <input id="p1.DEX.acrobatics.val" class="mono" inputmode="numeric" />
+              </div>
+              <div class="skillRow">
+                <label><input type="checkbox" id="p1.DEX.sleight.prof" /> <span class="label">Sleight of Hand</span></label>
+                <span class="muted">DEX</span>
+                <input id="p1.DEX.sleight.val" class="mono" inputmode="numeric" />
+              </div>
+              <div class="skillRow">
+                <label><input type="checkbox" id="p1.DEX.stealth.prof" /> <span class="label">Stealth</span></label>
+                <span class="muted">DEX</span>
+                <input id="p1.DEX.stealth.val" class="mono" inputmode="numeric" />
+              </div>
+            </div>
+          </div>
+
+          <!-- CON -->
+          <div class="abilityCard" id="CON.card">
+            <div class="abilityHeader">
+              <div class="abilityTitle">Constitution</div>
+              <div class="abilityInputs">
+                <div class="miniField dual">
+                  <label>Score / Mod</label>
+                  <div class="dualRow">
+                    <input id="p1.CON.score" class="mono" inputmode="numeric" />
+                    <span class="divider"></span>
+                    <input id="p1.CON.mod" class="mono" inputmode="numeric" />
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="skillsBody">
+              <div class="skillRow">
+                <label><input type="checkbox" id="p1.CON.save.prof" /> <span class="label">Saving Throw</span></label>
+                <span class="muted">CON</span>
+                <input id="p1.CON.save.val" class="mono" inputmode="numeric" />
+              </div>
+            </div>
+          </div>
+
+          <!-- INT -->
+          <div class="abilityCard" id="INT.card">
+            <div class="abilityHeader">
+              <div class="abilityTitle">Intelligence</div>
+              <div class="abilityInputs">
+                <div class="miniField dual">
+                  <label>Score / Mod</label>
+                  <div class="dualRow">
+                    <input id="p1.INT.score" class="mono" inputmode="numeric" />
+                    <span class="divider"></span>
+                    <input id="p1.INT.mod" class="mono" inputmode="numeric" />
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="skillsBody">
+              <div class="skillRow">
+                <label><input type="checkbox" id="p1.INT.save.prof" /> <span class="label">Saving Throw</span></label>
+                <span class="muted">INT</span>
+                <input id="p1.INT.save.val" class="mono" inputmode="numeric" />
+              </div>
+              <div class="skillRow">
+                <label><input type="checkbox" id="p1.INT.arcana.prof" /> <span class="label">Arcana</span></label>
+                <span class="muted">INT</span>
+                <input id="p1.INT.arcana.val" class="mono" inputmode="numeric" />
+              </div>
+              <div class="skillRow">
+                <label><input type="checkbox" id="p1.INT.history.prof" /> <span class="label">History</span></label>
+                <span class="muted">INT</span>
+                <input id="p1.INT.history.val" class="mono" inputmode="numeric" />
+              </div>
+              <div class="skillRow">
+                <label><input type="checkbox" id="p1.INT.investigation.prof" /> <span class="label">Investigation</span></label>
+                <span class="muted">INT</span>
+                <input id="p1.INT.investigation.val" class="mono" inputmode="numeric" />
+              </div>
+              <div class="skillRow">
+                <label><input type="checkbox" id="p1.INT.nature.prof" /> <span class="label">Nature</span></label>
+                <span class="muted">INT</span>
+                <input id="p1.INT.nature.val" class="mono" inputmode="numeric" />
+              </div>
+              <div class="skillRow">
+                <label><input type="checkbox" id="p1.INT.religion.prof" /> <span class="label">Religion</span></label>
+                <span class="muted">INT</span>
+                <input id="p1.INT.religion.val" class="mono" inputmode="numeric" />
+              </div>
+            </div>
+          </div>
+
+          <!-- WIS -->
+          <div class="abilityCard" id="WIS.card">
+            <div class="abilityHeader">
+              <div class="abilityTitle">Wisdom</div>
+              <div class="abilityInputs">
+                <div class="miniField dual">
+                  <label>Score / Mod</label>
+                  <div class="dualRow">
+                    <input id="p1.WIS.score" class="mono" inputmode="numeric" />
+                    <span class="divider"></span>
+                    <input id="p1.WIS.mod" class="mono" inputmode="numeric" />
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="skillsBody">
+              <div class="skillRow">
+                <label><input type="checkbox" id="p1.WIS.save.prof" /> <span class="label">Saving Throw</span></label>
+                <span class="muted">WIS</span>
+                <input id="p1.WIS.save.val" class="mono" inputmode="numeric" />
+              </div>
+              <div class="skillRow">
+                <label><input type="checkbox" id="p1.WIS.animal.prof" /> <span class="label">Animal Handling</span></label>
+                <span class="muted">WIS</span>
+                <input id="p1.WIS.animal.val" class="mono" inputmode="numeric" />
+              </div>
+              <div class="skillRow">
+                <label><input type="checkbox" id="p1.WIS.insight.prof" /> <span class="label">Insight</span></label>
+                <span class="muted">WIS</span>
+                <input id="p1.WIS.insight.val" class="mono" inputmode="numeric" />
+              </div>
+              <div class="skillRow">
+                <label><input type="checkbox" id="p1.WIS.medicine.prof" /> <span class="label">Medicine</span></label>
+                <span class="muted">WIS</span>
+                <input id="p1.WIS.medicine.val" class="mono" inputmode="numeric" />
+              </div>
+              <div class="skillRow">
+                <label><input type="checkbox" id="p1.WIS.perception.prof" /> <span class="label">Perception</span></label>
+                <span class="muted">WIS</span>
+                <input id="p1.WIS.perception.val" class="mono" inputmode="numeric" />
+              </div>
+              <div class="skillRow">
+                <label><input type="checkbox" id="p1.WIS.survival.prof" /> <span class="label">Survival</span></label>
+                <span class="muted">WIS</span>
+                <input id="p1.WIS.survival.val" class="mono" inputmode="numeric" />
+              </div>
+            </div>
+          </div>
+
+          <!-- CHA -->
+          <div class="abilityCard" id="CHA.card">
+            <div class="abilityHeader">
+              <div class="abilityTitle">Charisma</div>
+              <div class="abilityInputs">
+                <div class="miniField dual">
+                  <label>Score / Mod</label>
+                  <div class="dualRow">
+                    <input id="p1.CHA.score" class="mono" inputmode="numeric" />
+                    <span class="divider"></span>
+                    <input id="p1.CHA.mod" class="mono" inputmode="numeric" />
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="skillsBody">
+              <div class="skillRow">
+                <label><input type="checkbox" id="p1.CHA.save.prof" /> <span class="label">Saving Throw</span></label>
+                <span class="muted">CHA</span>
+                <input id="p1.CHA.save.val" class="mono" inputmode="numeric" />
+              </div>
+              <div class="skillRow">
+                <label><input type="checkbox" id="p1.CHA.deception.prof" /> <span class="label">Deception</span></label>
+                <span class="muted">CHA</span>
+                <input id="p1.CHA.deception.val" class="mono" inputmode="numeric" />
+              </div>
+              <div class="skillRow">
+                <label><input type="checkbox" id="p1.CHA.intimidation.prof" /> <span class="label">Intimidation</span></label>
+                <span class="muted">CHA</span>
+                <input id="p1.CHA.intimidation.val" class="mono" inputmode="numeric" />
+              </div>
+              <div class="skillRow">
+                <label><input type="checkbox" id="p1.CHA.performance.prof" /> <span class="label">Performance</span></label>
+                <span class="muted">CHA</span>
+                <input id="p1.CHA.performance.val" class="mono" inputmode="numeric" />
+              </div>
+              <div class="skillRow">
+                <label><input type="checkbox" id="p1.CHA.persuasion.prof" /> <span class="label">Persuasion</span></label>
+                <span class="muted">CHA</span>
+                <input id="p1.CHA.persuasion.val" class="mono" inputmode="numeric" />
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Proficiency / Passive -->
+      <div class="section">
+        <div class="head">Proficiency & Passive</div>
+        <div class="grid g-3">
+          <div class="field"><label for="p1.profbonus">Proficiency Bonus</label><input id="p1.profbonus" placeholder="+2" /></div>
+          <div class="field"><label for="p1.passive">Passive Wisdom (Perception)</label><input id="p1.passive" placeholder="10 + Perception mod" /></div>
+          <div class="field"><label for="p1.inspiration">Inspiration</label><input id="p1.inspiration" placeholder="✓ / Yes / number of tokens" /></div>
+        </div>
+      </div>
+
+      <!-- Combat -->
+      <div class="section">
+        <div class="head">Combat</div>
+        <div class="grid g-3">
+          <div class="field"><label for="p1.AC">Armor Class</label><input id="p1.AC" /></div>
+          <div class="field"><label for="p1.Init">Initiative</label><input id="p1.Init" /></div>
+          <div class="field"><label for="p1.Speed">Speed</label><input id="p1.Speed" placeholder="ft." /></div>
+        </div>
+        <div class="grid g-3" style="margin-top:12px;">
+          <div class="split">
+            <div class="cap">Hit Points (Current / Max)</div>
+            <div class="row"><div class="cell"><input id="p1.HP.current" class="mono" placeholder="Current" /></div><div class="cell"><input id="p1.HP.max" class="mono" placeholder="Max" /></div></div>
+          </div>
+          <div class="field"><label for="p1.HD.single">Hit Dice</label><input id="p1.HD.single" class="mono" placeholder="e.g., 1d8" /></div>
+          <div class="field">
+            <label>Death Saves</label>
+            <div class="pips" data-group="p1.ds.success"><span class="pip"></span><span class="pip"></span><span class="pip"></span><span style="margin-left:8px; font-size:12px; color:var(--muted)">Successes</span></div>
+            <div class="pips" data-group="p1.ds.fail" style="margin-top:8px;"><span class="pip"></span><span class="pip"></span><span class="pip"></span><span style="margin-left:8px; font-size:12px; color:var(--muted)">Failures</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Attacks (3-col list box) -->
+      <div class="section">
+        <div class="head">Attacks & Spellcasting</div>
+        <div class="grid">
+          <div class="listbox h240 list-attacks" data-key="attacks" data-title="Attacks & Spellcasting" data-rows="18"></div>
+        </div>
+      </div>
+
+      <!-- Inventory + Coins + Carry Weight -->
+      <div class="section">
+        <div class="head">Inventory</div>
+        <div class="grid g-3">
+          <div class="listbox h200" data-key="inv.equipment" data-title="Equipment" data-rows="24"></div>
+          <div class="listbox h200" data-key="inv.backpack" data-title="Backpack" data-rows="24"></div>
+          <div class="listbox h200" data-key="inv.custom" data-title="Custom (rename inside)" data-rows="24"></div>
+        </div>
+        <div class="grid g-5" style="padding-top:0;">
+          <div class="field"><label for="coin.cp">CP</label><input id="coin.cp" class="mono coin" /></div>
+          <div class="field"><label for="coin.sp">SP</label><input id="coin.sp" class="mono coin" /></div>
+          <div class="field"><label for="coin.ep">EP</label><input id="coin.ep" class="mono coin" /></div>
+          <div class="field"><label for="coin.gp">GP</label><input id="coin.gp" class="mono coin" /></div>
+          <div class="field"><label for="coin.pp">PP</label><input id="coin.pp" class="mono coin" /></div>
+        </div>
+        <div class="grid g-3" style="padding-top:0;">
+          <div class="split">
+            <div class="cap">Carry Weight (Current / Max)</div>
+            <div class="row"><div class="cell"><input id="carry.current" class="mono" placeholder="lb" /></div><div class="cell"><input id="carry.max" class="mono" placeholder="lb" /></div></div>
+          </div>
+          <div class="field"><label for="carry.note">Carrying Capacity Note</label><input id="carry.note" placeholder="e.g., STR × 15 lb (PHB)" /></div>
+        </div>
+      </div>
+
+      <!-- Class Resources, Ammo & Charges -->
+      <div class="section">
+        <div class="head">Class Resources, Ammo & Charges</div>
+        <div class="grid">
+          <div class="field">
+            <label>Track limited-use features, ammo, or charges</label>
+            <div id="res.rows" class="grid" style="grid-template-columns:1fr; gap:10px; padding:0;">
+              <!-- rows injected by JS -->
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Roleplay Anchors -->
+      <div class="section">
+        <div class="head">Roleplay Anchors</div>
+        <div class="grid g-4">
+          <div class="listbox h180" data-key="rp.personality" data-title="Personality Traits" data-rows="16"></div>
+          <div class="listbox h180" data-key="rp.ideals" data-title="Ideals" data-rows="16"></div>
+          <div class="listbox h180" data-key="rp.bonds" data-title="Bonds" data-rows="16"></div>
+          <div class="listbox h180" data-key="rp.flaws" data-title="Flaws" data-rows="16"></div>
+        </div>
+      </div>
+
+      <!-- Proficiencies -->
+      <div class="section">
+        <div class="head">Proficiencies & Languages</div>
+        <div class="grid">
+          <div class="listbox h200" data-key="profs.languages" data-title="List" data-rows="22"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- =========================== PAGE 2: SPELLS =========================== -->
+    <div class="page" id="p2">
+      <div class="section">
+        <div class="head">Spellcasting Summary</div>
+        <div class="grid g-4">
+          <div class="field"><label for="p2.Class">Spellcasting Class</label><input id="p2.Class" /></div>
+          <div class="field"><label for="p2.Ability">Spellcasting Ability</label><input id="p2.Ability" /></div>
+          <div class="field"><label for="p2.DC">Spell Save DC</label><input id="p2.DC" /></div>
+          <div class="field"><label for="p2.AttackBonus">Spell Attack Bonus</label><input id="p2.AttackBonus" /></div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="head">Cantrips</div>
+        <div class="grid">
+          <div class="listbox h180" data-key="spells.cantrips" data-title="List" data-rows="18"></div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="head">Prepared/Known Spells</div>
+        <div class="grid g-2">
+          <div class="listbox h180" data-key="spells.l1" data-title="Level 1" data-rows="18"></div>
+          <div class="listbox h180" data-key="spells.l2" data-title="Level 2" data-rows="18"></div>
+          <div class="listbox h180" data-key="spells.l3" data-title="Level 3" data-rows="18"></div>
+          <div class="listbox h180" data-key="spells.l4" data-title="Level 4" data-rows="18"></div>
+          <div class="listbox h180" data-key="spells.l5" data-title="Level 5" data-rows="18"></div>
+          <div class="listbox h180" data-key="spells.l6" data-title="Level 6" data-rows="18"></div>
+          <div class="listbox h180" data-key="spells.l7" data-title="Level 7" data-rows="18"></div>
+          <div class="listbox h180" data-key="spells.l8" data-title="Level 8" data-rows="18"></div>
+          <div class="listbox h180" data-key="spells.l9" data-title="Level 9" data-rows="18"></div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="head">Spell Notes</div>
+        <div class="grid">
+          <div class="listbox h150" data-key="spells.notes" data-title="Components / Rituals / Focus Notes" data-rows="14"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- =========================== PAGE 3: FEATURES & NOTES (backstory removed) =========================== -->
+    <div class="page" id="p3">
+      <div class="section">
+        <div class="head">Features & Traits</div>
+        <div class="grid">
+          <div class="listbox h240" data-key="p3.features" data-title="Details" data-rows="28"></div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="head">Allies & Organizations</div>
+        <div class="grid g-2">
+          <div class="listbox h200" data-key="p3.allies" data-title="Allies & Organizations" data-rows="22"></div>
+          <div class="listbox h200" data-key="p3.symbol" data-title="Symbol / Sketch / Notes" data-rows="22"></div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="head">Additional Features</div>
+        <div class="grid">
+          <div class="listbox h150" data-key="p3.addl" data-title="Notes" data-rows="16"></div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="head">Treasure</div>
+        <div class="grid">
+          <div class="listbox h200" data-key="p3.treasure" data-title="Inventory" data-rows="22"></div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="head">Notes</div>
+        <div class="grid">
+          <div class="listbox h260" data-key="p3.notes" data-title="Anything Else" data-rows="28"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- =========================== PAGE 4: APPEARANCE & BACKSTORY =========================== -->
+    <div class="page" id="p4">
+      <div class="section">
+        <div class="head">Appearance</div>
+        <div class="grid g-3">
+          <div class="listbox h200" data-key="app.portrait" data-title="Portrait / Description" data-rows="20"></div>
+          <div class="field">
+            <label>Physical Profile</label>
+            <div class="grid g-2" style="padding:0;">
+              <div class="field"><label for="app.age">Age</label><input id="app.age" /></div>
+              <div class="field"><label for="app.height">Height</label><input id="app.height" /></div>
+              <div class="field"><label for="app.weight">Weight</label><input id="app.weight" /></div>
+              <div class="field"><label for="app.eyes">Eyes</label><input id="app.eyes" /></div>
+              <div class="field"><label for="app.skin">Skin</label><input id="app.skin" /></div>
+              <div class="field"><label for="app.hair">Hair</label><input id="app.hair" /></div>
+              <div class="field"><label for="app.pronouns">Pronouns / Voice</label><input id="app.pronouns" /></div>
+            </div>
+          </div>
+          <div class="listbox h200" data-key="app.wardrobe" data-title="Wardrobe / Armor Variants" data-rows="18"></div>
+        </div>
+        <div class="grid g-3">
+          <div class="listbox h180" data-key="app.manner" data-title="Mannerisms & Speech" data-rows="16"></div>
+          <div class="listbox h180" data-key="app.marks" data-title="Distinctive Marks" data-rows="16"></div>
+          <div class="listbox h180" data-key="app.focus" data-title="Holy Symbol / Focus / Totems" data-rows="16"></div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="head">Backstory — Foundations</div>
+        <div class="grid g-3">
+          <div class="listbox h200" data-key="bs.origin" data-title="Origin & Family" data-rows="18"></div>
+          <div class="listbox h200" data-key="bs.events" data-title="Formative Events" data-rows="18"></div>
+          <div class="listbox h200" data-key="bs.goals" data-title="Motivations & Long-Term Goals" data-rows="18"></div>
+        </div>
+        <div class="grid g-3">
+          <div class="listbox h180" data-key="bs.allies" data-title="Allies & Contacts" data-rows="16"></div>
+          <div class="listbox h180" data-key="bs.rivals" data-title="Rivals & Enemies" data-rows="16"></div>
+          <div class="listbox h180" data-key="bs.secrets" data-title="Secrets & Oaths" data-rows="16"></div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="head">Backstory — Ongoing Development</div>
+        <div class="grid g-2">
+          <div class="listbox h240 list-3col" data-key="log.events" data-title="Event Log" data-cols="Date/Session|What Happened|Impact/Change" data-rows="16"></div>
+          <div class="listbox h240 list-4col" data-key="log.quests" data-title="Quest Tracker" data-cols="Quest|Given By|Status|Reward/Next Step" data-rows="14"></div>
+        </div>
+        <div class="grid g-2">
+          <div class="listbox h220 list-3col" data-key="log.leads" data-title="Clues & Leads" data-cols="Lead/Clue|Where/Source|Next Action" data-rows="14"></div>
+          <div class="listbox h220 list-2col" data-key="log.finds" data-title="Noteworthy Finds" data-cols="Item/Document|Why It Matters" data-rows="14"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- =========================== PAGE 5: COMPANION / FAMILIAR / PET =========================== -->
+    <div class="page" id="p5">
+      <div class="section">
+        <div class="head">Header</div>
+        <div class="grid g-3">
+          <div class="field"><label for="pet.name">Name</label><input id="pet.name" /></div>
+          <div class="field"><label for="pet.classlevel">Class & Level / CR</label><input id="pet.classlevel" /></div>
+          <div class="field"><label for="pet.rel">Relationship</label><input id="pet.rel" /></div>
+        </div>
+        <div class="grid g-3" style="margin-top:12px;">
+          <div class="field"><label for="pet.role">Role</label><input id="pet.role" /></div>
+          <div class="field"><label for="pet.race">Race / Type</label><input id="pet.race" /></div>
+          <div class="field"><label for="pet.alignxp">Alignment / XP</label><input id="pet.alignxp" /></div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="head">Abilities</div>
+        <div class="grid g-3">
+          <div class="split"><div class="cap">Strength</div><div class="row"><div class="cell"><input id="pet.STR.score" class="mono" placeholder="Score" /></div><div class="cell"><input id="pet.STR.mod" class="mono" placeholder="Mod" /></div></div></div>
+          <div class="split"><div class="cap">Dexterity</div><div class="row"><div class="cell"><input id="pet.DEX.score" class="mono" placeholder="Score" /></div><div class="cell"><input id="pet.DEX.mod" class="mono" placeholder="Mod" /></div></div></div>
+          <div class="split"><div class="cap">Constitution</div><div class="row"><div class="cell"><input id="pet.CON.score" class="mono" placeholder="Score" /></div><div class="cell"><input id="pet.CON.mod" class="mono" placeholder="Mod" /></div></div></div>
+          <div class="split"><div class="cap">Intelligence</div><div class="row"><div class="cell"><input id="pet.INT.score" class="mono" placeholder="Score" /></div><div class="cell"><input id="pet.INT.mod" class="mono" placeholder="Mod" /></div></div></div>
+          <div class="split"><div class="cap">Wisdom</div><div class="row"><div class="cell"><input id="pet.WIS.score" class="mono" placeholder="Score" /></div><div class="cell"><input id="pet.WIS.mod" class="mono" placeholder="Mod" /></div></div></div>
+          <div class="split"><div class="cap">Charisma</div><div class="row"><div class="cell"><input id="pet.CHA.score" class="mono" placeholder="Score" /></div><div class="cell"><input id="pet.CHA.mod" class="mono" placeholder="Mod" /></div></div></div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="head">Perception & Proficiency</div>
+        <div class="grid g-3">
+          <div class="field"><label for="pet.profbonus">Proficiency Bonus</label><input id="pet.profbonus" class="mono" /></div>
+          <div class="field"><label for="pet.passive">Passive Perception</label><input id="pet.passive" class="mono" /></div>
+          <div class="field"><label for="pet.senses.note">Senses Note</label><input id="pet.senses.note" placeholder="e.g., Darkvision 60 ft, Keen Hearing/Smell" /></div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="head">Combat</div>
+        <div class="grid g-3">
+          <div class="field"><label for="pet.AC">Armor Class</label><input id="pet.AC" /></div>
+          <div class="field"><label for="pet.Init">Initiative</label><input id="pet.Init" /></div>
+          <div class="field"><label for="pet.Speed">Speed</label><input id="pet.Speed" placeholder="ft." /></div>
+        </div>
+        <div class="grid g-3" style="margin-top:12px;">
+          <div class="split"><div class="cap">Hit Points (Current / Max)</div><div class="row"><div class="cell"><input id="pet.HP.current" class="mono" placeholder="Current" /></div><div class="cell"><input id="pet.HP.max" class="mono" placeholder="Max" /></div></div></div>
+          <div class="field"><label for="pet.HD.single">Hit Dice</label><input id="pet.HD.single" class="mono" placeholder="e.g., 2d6" /></div>
+          <div class="field">
+            <label>Death Saves (if applicable)</label>
+            <div class="pips" data-group="pet.ds.success"><span class="pip"></span><span class="pip"></span><span class="pip"></span><span style="margin-left:8px; font-size:12px; color:var(--muted)">Successes</span></div>
+            <div class="pips" data-group="pet.ds.fail" style="margin-top:8px;"><span class="pip"></span><span class="pip"></span><span class="pip"></span><span style="margin-left:8px; font-size:12px; color:var(--muted)">Failures</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="head">Skills & Traits</div>
+        <div class="grid g-3">
+          <div class="listbox h180" data-key="pet.senses" data-title="Senses" data-rows="14"></div>
+          <div class="listbox h180" data-key="pet.skills" data-title="Skill Proficiencies" data-rows="14"></div>
+          <div class="listbox h180" data-key="pet.features" data-title="Features & Traits" data-rows="16"></div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="head">Attacks & Actions</div>
+        <div class="grid">
+          <div class="listbox h240 list-attacks" data-key="pet.attacks" data-title="Attacks & Actions" data-rows="16"></div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="head">Resources / Ammo & Charges</div>
+        <div class="grid">
+          <div class="field">
+            <label>Track uses for abilities or ammo</label>
+            <div id="pet.res.rows" class="grid" style="grid-template-columns:1fr; gap:10px; padding:0;">
+              <!-- rows injected by JS -->
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="head">Equipment</div>
+        <div class="grid g-2">
+          <div class="listbox h200" data-key="pet.quickslots" data-title="Quick Slots" data-rows="10"></div>
+          <div class="listbox h200" data-key="pet.equipment" data-title="Equipment" data-rows="20"></div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="head">Languages & Proficiencies</div>
+        <div class="grid">
+          <div class="listbox h180" data-key="pet.profs" data-title="List" data-rows="16"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ---------- helpers ----------
+    const saveLS = (k,v)=>{ try{ localStorage.setItem(k,v); }catch{} };
+    const loadLS = (k,d=null)=>{ try{ const v=localStorage.getItem(k); return v===null?d:v; }catch{ return d; } };
+
+    // inputs/checkboxes autosave
+    (function(){
+      document.querySelectorAll('input').forEach(el=>{
+        const id = el.id || (el.dataset.key = crypto.randomUUID());
+        const s = loadLS(id);
+        if(s!==null){ if(el.type==='checkbox') el.checked=(s==='1'); else el.value=s; }
+        const onChange=()=>saveLS(id, el.type==='checkbox'?(el.checked?'1':'0'):(el.value??''));
+        el.addEventListener('input', onChange); el.addEventListener('change', onChange);
+      });
+    })();
+
+    // toggle pips state (death saves & resource rows)
+    (function(){
+      document.querySelectorAll('.pips').forEach((group,gi)=>{
+        const id = group.dataset.group || ('pips-'+gi);
+        const apply = arr => group.querySelectorAll('.pip').forEach((p,i)=>p.classList.toggle('active',!!arr[i]));
+        const s = loadLS(id);
+        if(s){ try{ apply(JSON.parse(s)); }catch{} }
+        group.querySelectorAll('.pip').forEach((pip,i)=>{
+          pip.addEventListener('click',()=>{
+            const state = Array.from(group.querySelectorAll('.pip')).map(p=>p.classList.contains('active'));
+            state[i]=!state[i]; apply(state); saveLS(id, JSON.stringify(state));
+          });
+        });
+      });
+    })();
+
+    // ---------- list boxes (1-column) ----------
+    function buildListBox(el){
+      const key = el.dataset.key; if(!key) return;
+      const title = el.dataset.title || 'List';
+      const defaultRows = parseInt(el.dataset.rows||'20',10);
+
+      el.innerHTML = `
+        <div class="list-head">
+          <div class="list-title">${title}</div>
+          <div class="list-controls">
+            <button type="button" data-act="add">+ Row</button>
+            <button type="button" data-act="trim">Remove Empty Rows</button>
+          </div>
+        </div>
+        <div class="list-body" role="region" aria-label="${title}">
+          <table><thead><tr><th>Item</th></tr></thead><tbody></tbody></table>
+        </div>`;
+      const tbody = el.querySelector('tbody');
+      let rows = []; const raw = loadLS(key);
+      if(raw){ try{ rows = JSON.parse(raw); }catch{} }
+      if(!Array.isArray(rows)) rows=[];
+      if(rows.length<defaultRows){ for(let i=rows.length;i<defaultRows;i++) rows.push(''); }
+
+      const render = ()=>{
+        tbody.innerHTML='';
+        rows.forEach((txt,idx)=>{
+          const tr=document.createElement('tr');
+          const td=document.createElement('td'); td.contentEditable="true"; td.dataset.index=String(idx); td.textContent=txt;
+          td.addEventListener('keydown',e=>{
+            if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); rows.splice(idx+1,0,''); save(); render(); const n=tbody.querySelector(`td[data-index="${idx+1}"]`); if(n) n.focus(); }
+          });
+          td.addEventListener('input',()=>{ rows[idx]=td.textContent||''; scheduleSave(); });
+          tr.appendChild(td); tbody.appendChild(tr);
+        });
+      };
+      let t=null; const save=()=>saveLS(key,JSON.stringify(rows)); const scheduleSave=()=>{ clearTimeout(t); t=setTimeout(save,150); };
+      render();
+
+      el.querySelector('[data-act="add"]').addEventListener('click',()=>{ rows.push(''); save(); render(); const last=tbody.querySelector('td:last-child'); if(last) last.focus(); });
+      el.querySelector('[data-act="trim"]').addEventListener('click',()=>{ rows = rows.filter((r,i)=>r.trim()!=='' || i<1); if(rows.length<1) rows=['']; save(); render(); });
+    }
+    document.querySelectorAll('.listbox:not(.list-attacks):not(.list-2col):not(.list-3col):not(.list-4col)').forEach(buildListBox);
+
+    // ---------- multi-column list boxes (2/3/4 col) ----------
+    function buildMultiCol(el, cols){
+      const key = el.dataset.key; if(!key) return;
+      const title = el.dataset.title || 'Table';
+      const headers = (el.dataset.cols||'').split('|');
+      const defaultRows = parseInt(el.dataset.rows||'14',10);
+
+      el.innerHTML = `
+        <div class="list-head">
+          <div class="list-title">${title}</div>
+          <div class="list-controls">
+            <button type="button" data-act="add">+ Row</button>
+            <button type="button" data-act="trim">Remove Empty Rows</button>
+          </div>
+        </div>
+        <div class="list-body" role="region" aria-label="${title}">
+          <table><thead><tr>${headers.map(h=>`<th>${h||'Column'}</th>`).join('')}</tr></thead><tbody></tbody></table>
+        </div>`;
+      const tbody = el.querySelector('tbody');
+
+      let rows = []; const raw = loadLS(key);
+      if(raw){ try{ rows = JSON.parse(raw); }catch{} }
+      if(!Array.isArray(rows)) rows=[];
+      if(rows.length<defaultRows){ for(let i=rows.length;i<defaultRows;i++) rows.push(Array(cols).fill('')); }
+
+      const render = ()=>{
+        tbody.innerHTML='';
+        rows.forEach((arr,ri)=>{
+          const tr=document.createElement('tr');
+          for(let ci=0; ci<cols; ci++){
+            const td=document.createElement('td'); td.contentEditable="true"; td.dataset.ri=String(ri); td.dataset.ci=String(ci); td.textContent=arr[ci]||'';
+            td.addEventListener('keydown',e=>{
+              if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); rows.splice(ri+1,0,Array(cols).fill('')); save(); render();
+                const next=tbody.querySelector(`td[data-ri="${ri+1}"][data-ci="${ci}"]`); if(next) next.focus(); }
+            });
+            td.addEventListener('input',()=>{ rows[ri][ci]=td.textContent||''; scheduleSave(); });
+            tr.appendChild(td);
+          }
+          tbody.appendChild(tr);
+        });
+      };
+      let t=null; const save=()=>saveLS(key,JSON.stringify(rows)); const scheduleSave=()=>{ clearTimeout(t); t=setTimeout(save,150); };
+      render();
+
+      el.querySelector('[data-act="add"]').addEventListener('click',()=>{ rows.push(Array(cols).fill('')); save(); render(); const cell=tbody.querySelector('td:last-child'); if(cell) cell.focus(); });
+      el.querySelector('[data-act="trim"]').addEventListener('click',()=>{
+        rows = rows.filter((r,i)=> (r.join('').trim()!=='') || i<1); if(rows.length<1) rows=[Array(cols).fill('')];
+        save(); render();
+      });
+    }
+    document.querySelectorAll('.list-2col').forEach(el=>buildMultiCol(el,2));
+    document.querySelectorAll('.list-3col').forEach(el=>buildMultiCol(el,3));
+    document.querySelectorAll('.list-4col').forEach(el=>buildMultiCol(el,4));
+
+    // ---------- 3-column Attacks list box ----------
+    function buildAttacksBox(el){
+      const key = el.dataset.key || 'attacks';
+      const title = el.dataset.title || 'Attacks & Spellcasting';
+      const defaultRows = parseInt(el.dataset.rows||'18',10);
+
+      el.innerHTML = `
+        <div class="list-head">
+          <div class="list-title">${title}</div>
+          <div class="list-controls">
+            <button type="button" data-act="add">+ Row</button>
+            <button type="button" data-act="trim">Remove Empty Rows</button>
+          </div>
+        </div>
+        <div class="list-body" role="region" aria-label="${title}">
+          <table>
+            <thead><tr><th>Name</th><th>Atk Bonus</th><th>Damage/Type</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>`;
+      const tbody = el.querySelector('tbody');
+
+      let rows = []; const raw = loadLS(key);
+      if(raw){ try{ rows = JSON.parse(raw); }catch{} }
+      if(!Array.isArray(rows)) rows=[];
+      if(rows.length<defaultRows){ for(let i=rows.length;i<defaultRows;i++) rows.push(['','','']); }
+
+      const render = ()=>{
+        tbody.innerHTML='';
+        rows.forEach((arr,ri)=>{
+          const tr=document.createElement('tr');
+          for(let ci=0; ci<3; ci++){
+            const td=document.createElement('td'); td.contentEditable="true"; td.dataset.ri=String(ri); td.dataset.ci=String(ci); td.textContent=arr[ci]||'';
+            td.addEventListener('keydown',e=>{
+              if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); rows.splice(ri+1,0,['','','']); save(); render();
+                const next = tbody.querySelector(`td[data-ri="${ri+1}"][data-ci="${ci}"]`); if(next) next.focus(); }
+            });
+            td.addEventListener('input',()=>{ rows[ri][ci]=td.textContent||''; scheduleSave(); });
+            tr.appendChild(td);
+          }
+          tbody.appendChild(tr);
+        });
+      };
+      let t=null; const save=()=>saveLS(key,JSON.stringify(rows)); const scheduleSave=()=>{ clearTimeout(t); t=setTimeout(save,150); };
+      render();
+
+      el.querySelector('[data-act="add"]').addEventListener('click',()=>{ rows.push(['','','']); save(); render(); const cell=tbody.querySelector('td:last-child'); if(cell) cell.focus(); });
+      el.querySelector('[data-act="trim"]').addEventListener('click',()=>{
+        rows = rows.filter((r,i)=> (r.join('').trim()!=='') || i<1);
+        if(rows.length<1) rows=[['','','']];
+        save(); render();
+      });
+    }
+    document.querySelectorAll('.list-attacks').forEach(buildAttacksBox);
+
+    // ---------- Resources / Charges panels (6 rows, name + 10 pips + max) ----------
+    function buildResourcePanel(containerId, storageKeyPrefix){
+      const host = document.getElementById(containerId); if(!host) return;
+      for(let r=0; r<6; r++){
+        const row = document.createElement('div');
+        row.style.display='grid';
+        row.style.gridTemplateColumns='180px auto 70px';
+        row.style.alignItems='center';
+        row.style.gap='8px';
+        row.style.border='1px solid var(--border)';
+        row.style.borderRadius='10px';
+        row.style.padding='6px 8px';
+        // name
+        const name = document.createElement('input'); name.placeholder='Resource name'; name.id = `${storageKeyPrefix}.r${r}.name`;
+        name.style.border='1px solid var(--border)'; name.style.borderRadius='8px'; name.style.padding='4px 6px';
+        // pips
+        const pipWrap = document.createElement('div'); pipWrap.className='pips'; pipWrap.dataset.group = `${storageKeyPrefix}.r${r}.pips`;
+        for(let i=0;i<10;i++){ const p=document.createElement('span'); p.className='pip'; pipWrap.appendChild(p); }
+        // max
+        const max = document.createElement('input'); max.placeholder='Max'; max.id = `${storageKeyPrefix}.r${r}.max`;
+        max.style.border='1px solid var(--border)'; max.style.borderRadius='8px'; max.style.padding='4px 6px'; max.className='mono';
+
+        row.appendChild(name); row.appendChild(pipWrap); row.appendChild(max);
+        host.appendChild(row);
+      }
+      // wire autosave for inputs in this panel
+      host.querySelectorAll('input').forEach(el=>{
+        const id = el.id; const s = loadLS(id); if(s!==null) el.value=s;
+        const onChange=()=>saveLS(id, el.value ?? '');
+        el.addEventListener('input', onChange); el.addEventListener('change', onChange);
+      });
+      // activate pip persistence for these pips
+      host.querySelectorAll('.pips').forEach((group)=>{
+        const id = group.dataset.group;
+        const apply = arr => group.querySelectorAll('.pip').forEach((p,i)=>p.classList.toggle('active',!!arr[i]));
+        const s = loadLS(id);
+        if(s){ try{ apply(JSON.parse(s)); }catch{} }
+        group.querySelectorAll('.pip').forEach((pip,i)=>{
+          pip.addEventListener('click',()=>{
+            const state = Array.from(group.querySelectorAll('.pip')).map(p=>p.classList.contains('active'));
+            state[i]=!state[i]; apply(state); saveLS(id, JSON.stringify(state));
+          });
+        });
+      });
+    }
+    // Build the two resource panels
+    buildResourcePanel('res.rows','res');
+    buildResourcePanel('pet.res.rows','pet.res');
+
+    // page switcher
+    function showPage(n){
+      document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+      const el=document.getElementById('p'+n); if(el) el.classList.add('active');
+      saveLS('sheet.activePage3', String(n));
+    }
+    (function(){
+      const last = loadLS('sheet.activePage3','1');
+      document.getElementById('pageSelect').value = last; showPage(last);
+    })();
+  </script>
+</body>
+</html>
